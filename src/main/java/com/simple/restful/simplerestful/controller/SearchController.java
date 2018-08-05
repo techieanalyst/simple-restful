@@ -1,0 +1,37 @@
+package com.simple.restful.simplerestful.controller;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(path = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+public class SearchController {
+
+	@GetMapping(path = "/dates")
+	public void getAllUniqueDates() {
+	}
+
+	@GetMapping(path = "/users")
+	public void getAllUniqueUsersLoginRecordForGivenTimePeriod(
+			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
+			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate) {
+	}
+
+	@GetMapping(path = "/logins")
+	public void retrieveUserLoginCountForGivenTimePeriodAndAttributes(
+			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
+			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate,
+			@RequestParam(value = "attribute1", required = false) List<String> attribute1,
+			@RequestParam(value = "attribute2", required = false) List<String> attribute2,
+			@RequestParam(value = "attribute3", required = false) List<String> attribute3,
+			@RequestParam(value = "attribute4", required = false) List<String> attribute4) {
+	}
+
+}
