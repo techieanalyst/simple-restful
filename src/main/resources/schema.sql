@@ -1,4 +1,5 @@
-CREATE TABLE employees (
+CREATE TABLE data (
+	id number auto_increment,
 	user text,
 	login_time timestamp,
 	attribute1 text,

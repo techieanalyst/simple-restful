@@ -3,6 +3,7 @@ package com.simple.restful.simplerestful.controller;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,9 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.simple.restful.simplerestful.service.DataService;
+
 @RestController
 @RequestMapping(path = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class SearchController {
+	
+	@Autowired
+	private DataService dataService;
 
 	@GetMapping(path = "/dates")
 	public void getAllUniqueDates() {
@@ -22,6 +28,7 @@ public class SearchController {
 	public void getAllUniqueUsersLoginRecordForGivenTimePeriod(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate) {
+		dataService.sample1();
 	}
 
 	@GetMapping(path = "/logins")
