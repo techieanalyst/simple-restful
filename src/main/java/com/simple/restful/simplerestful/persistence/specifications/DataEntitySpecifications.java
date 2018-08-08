@@ -1,6 +1,5 @@
 package com.simple.restful.simplerestful.persistence.specifications;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -17,6 +16,16 @@ import org.springframework.data.jpa.domain.Specification;
 import com.simple.restful.simplerestful.persistence.model.DataEntity;
 
 public class DataEntitySpecifications {
+	
+	public static Specification<DataEntity> initialize() {
+		return new Specification<DataEntity>() {
+			private static final long serialVersionUID = 5371326775287328230L;
+			@Override
+			public Predicate toPredicate(Root<DataEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+				return null;
+			}
+		};
+	}
 
 	public static Specification<DataEntity> withAttribute(String attributeName, List<String> attributes) {
 		return new Specification<DataEntity>() {
@@ -47,7 +56,5 @@ public class DataEntitySpecifications {
 		Date endOfDay = calStart.getTime();
 		return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("loginTime"), endOfDay);
 	}
-
-
 
 }

@@ -1,6 +1,6 @@
 CREATE TABLE data (
-	id number auto_increment,
-	user text,
+	id number auto_increment not null,
+	user text not null,
 	login_time timestamp,
 	attribute1 text,
 	attribute2 text,

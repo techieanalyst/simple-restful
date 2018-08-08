@@ -1,14 +1,18 @@
 package com.simple.restful.simplerestful.service;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,36 +27,53 @@ public class DataService {
 
 	@Autowired
 	private DataRepository dataRepository;
-
-	public List<DataEntity> retrieveDataEntitiesOnGivenCriteria(Date startDate, Date endDate, Map<String, List<String>> map) {
-		Specification<DataEntity> specifications = new Specification<DataEntity>() {
-			private static final long serialVersionUID = -1087003454127199932L;
-			@Override
-			public Predicate toPredicate(Root<DataEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-				return null;
-			}
-		};
+	
+	public List<String> sample() {
+		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
+		List<DataEntity> entities = dataRepository.findAll(specifications);
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		
+		List<Date> users = entities.stream().filter(distinctByKey(p -> dateFormat.format(p.getLoginTime()))).map(DataEntity::getUser)
+				.collect(Collectors.toCollection(ArrayList::new));
+	}
+	
+	public Map<String, Integer> retrieveLoginFrequencyOnGivenCriteria(Date startDate, Date endDate,
+			Map<String, List<String>> map) {
+		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
 		for (String attributeName : map.keySet()) {
 			List<String> attributes = map.get(attributeName);
-			if (attributes == null) continue;
-			specifications = specifications.and(DataEntitySpecifications.withAttribute(attributeName, attributes));
+			if (attributes != null && !attributes.isEmpty())
+				specifications = specifications.and(DataEntitySpecifications.withAttribute(attributeName, attributes));
 		}
-		if (startDate != null) {
-			specifications = specifications.and(DataEntitySpecifications.withStartDate(startDate));
-		}
-		if (endDate != null) {
-			specifications = specifications.and(DataEntitySpecifications.withEndDate(endDate));
-		}
-		
-		return dataRepository.findAll(specifications);
+		buildDateRangeSpecification(specifications, startDate, endDate);
+		List<DataEntity> entities = dataRepository.findAll(specifications);
+		Map<String, Integer> collect = entities.stream()
+				.collect(Collectors.groupingBy(DataEntity::getUser, Collectors.summingInt(e -> 1)));
+
+		return collect;
+	}
+	
+	public List<String> retrieveUniqueUsersLoggedInOnGivenDate(Date startDate, Date endDate) {
+		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
+		buildDateRangeSpecification(specifications, startDate, endDate);
+		List<DataEntity> entities = dataRepository.findAll(specifications);
+		List<String> users = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser)
+				.collect(Collectors.toCollection(ArrayList::new));
+		return users;
 	}
 
-//	public void sample1() {
-//		List<DataEntity> entities = dataRepository
-//				.findAll(DataEntitySpecifications.withStartDate(Date.valueOf(LocalDate.parse("2017-08-06"))));
-//		for (DataEntity data : entities) {
-//			System.out.println(data);
-//		}
-//	}
+	private void buildDateRangeSpecification(Specification<DataEntity> specification, Date startDate, Date endDate) {
+		if (startDate != null) {
+			specification = specification.and(DataEntitySpecifications.withStartDate(startDate));
+		}
+		if (endDate != null) {
+			specification = specification.and(DataEntitySpecifications.withEndDate(endDate));
+		}		
+	}
 
+	private <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+	    Set<Object> seen = ConcurrentHashMap.newKeySet();
+	    return t -> seen.add(keyExtractor.apply(t));
+	}
+	
 }

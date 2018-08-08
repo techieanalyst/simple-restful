@@ -47,7 +47,10 @@ public class SearchController {
 		maps.put("attributeTwo", attribute2);
 		maps.put("attributeThree", attribute3);
 		maps.put("attributeFour", attribute4);
-		return dataService.retrieveDataEntitiesOnGivenCriteria(startDate, endDate, maps);
+		
+		Map<String, Integer> results = dataService.retrieveLoginFrequencyOnGivenCriteria(startDate, endDate, maps);
+		
+		return null;
 	}
 
 }
