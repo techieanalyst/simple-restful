@@ -33,6 +33,20 @@ public class DataEntity {
 
 	@Column(name = "attribute4")
 	private String attributeFour;
+	
+	public DataEntity(Integer id, String user, Date loginTime, String attributeOne, String attributeTwo,
+			String attributeThree, String attributeFour) {
+		super();
+		this.id = id;
+		this.user = user;
+		this.loginTime = loginTime;
+		this.attributeOne = attributeOne;
+		this.attributeTwo = attributeTwo;
+		this.attributeThree = attributeThree;
+		this.attributeFour = attributeFour;
+	}
+	
+	public DataEntity() {}
 
 	public Integer getId() {
 		return id;
