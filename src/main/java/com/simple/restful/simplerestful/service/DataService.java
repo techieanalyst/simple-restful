@@ -55,7 +55,7 @@ public class DataService {
 		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
 		specifications = buildDateRangeSpecification(specifications, startDate, endDate);
 		List<DataEntity> entities = dataRepository.findAll(specifications);
-		List<String> users = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser)
+		List<String> users = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser).sorted()
 				.collect(Collectors.toCollection(ArrayList::new));
 		return users;
 	}
