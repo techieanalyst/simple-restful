@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.simple.restful.simplerestful.service.DataService;
@@ -28,13 +29,13 @@ public class SearchController {
 	private DataService dataService;
 
 	@GetMapping(path = "/dates")
-	public List<LocalDate> getAllUniqueDates() {
+	public @ResponseBody List<LocalDate> retrieveAllUniqueDates() {
 		logger.info(String.format("Getting list of unique dates"));
 		return dataService.retrieveUniqueDates();
 	}
 
 	@GetMapping(path = "/users")
-	public List<String> getAllUniqueUsersLoginRecordForGivenTimePeriod(
+	public @ResponseBody List<String> retrieveAllUniqueUsersLoginRecordForGivenTimePeriod(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate) {
 		logger.info(String.format("Getting list of unique users given the criteria: start=%tF, end=%tF",
@@ -43,7 +44,7 @@ public class SearchController {
 	}
 
 	@GetMapping(path = "/logins")
-	public Map<String, Integer> retrieveUserLoginCountForGivenTimePeriodAndAttributes(
+	public @ResponseBody Map<String, Integer> retrieveUserLoginCountForGivenTimePeriodAndAttributes(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate,
 			@RequestParam(value = "attribute1", required = false) List<String> attribute1,
