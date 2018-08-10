@@ -13,6 +13,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -24,15 +26,19 @@ import com.simple.restful.simplerestful.persistence.specifications.DataEntitySpe
 @Service
 public class DataService {
 
+	private static Logger logger = LoggerFactory.getLogger(DataService.class);
+	
 	@Autowired
 	private DataRepository dataRepository;
 	
 	public List<LocalDate> retrieveUniqueDates() {
 		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
 		List<DataEntity> entities = dataRepository.findAll(specifications);
-		return entities.stream().map(DataEntity::getLoginTime)
+		List<LocalDate> dates = entities.stream().map(DataEntity::getLoginTime)
 				.map(date -> date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).distinct().sorted()
 				.collect(Collectors.toList());
+		logger.info(String.format("Found %d unique dates", dates.size()));
+		return dates;
 	}
 	
 	public Map<String, Integer> retrieveLoginFrequencyOnGivenCriteria(Date startDate, Date endDate,
@@ -45,19 +51,20 @@ public class DataService {
 		}
 		specifications = buildDateRangeSpecification(specifications, startDate, endDate);
 		List<DataEntity> entities = dataRepository.findAll(specifications);
-		Map<String, Integer> collect = entities.stream()
+		Map<String, Integer> results = entities.stream()
 				.collect(Collectors.groupingBy(DataEntity::getUser, Collectors.summingInt(e -> 1)));
-
-		return collect;
+		logger.info(String.format("Found %d user/frequency combinations", results.size()));
+		return results;
 	}
-	
+
 	public List<String> retrieveUniqueUsersLoggedInOnGivenDate(Date startDate, Date endDate) {
 		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
 		specifications = buildDateRangeSpecification(specifications, startDate, endDate);
 		List<DataEntity> entities = dataRepository.findAll(specifications);
-		List<String> users = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser).sorted()
+		List<String> results = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser).sorted()
 				.collect(Collectors.toCollection(ArrayList::new));
-		return users;
+		logger.info(String.format("Found %d unique users", results.size()));
+		return results;
 	}
 
 	private Specification<DataEntity> buildDateRangeSpecification(Specification<DataEntity> specification, Date startDate, Date endDate) {

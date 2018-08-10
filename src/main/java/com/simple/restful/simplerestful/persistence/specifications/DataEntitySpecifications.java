@@ -1,10 +1,10 @@
 package com.simple.restful.simplerestful.persistence.specifications;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -16,6 +16,10 @@ import org.springframework.data.jpa.domain.Specification;
 import com.simple.restful.simplerestful.persistence.model.DataEntity;
 
 public class DataEntitySpecifications {
+	
+	private DataEntitySpecifications() {
+		
+	}
 	
 	public static Specification<DataEntity> initialize() {
 		return new Specification<DataEntity>() {
@@ -30,14 +34,18 @@ public class DataEntitySpecifications {
 	public static Specification<DataEntity> withAttribute(String attributeName, List<String> attributes) {
 		return new Specification<DataEntity>() {
 			private static final long serialVersionUID = 9108640606813152203L;
+
 			@Override
 			public Predicate toPredicate(Root<DataEntity> root, CriteriaQuery<?> query, CriteriaBuilder criteria) {
-				List<Predicate> predicates = new ArrayList<Predicate>();
-				Predicate[] arr = new Predicate[attributes.size()];
-				for (String attribute : attributes) {
-					predicates.add(criteria.equal(root.get(attributeName), attribute));
+				List<String> list = attributes.stream().filter(item -> item != null && !item.isEmpty())
+						.collect(Collectors.toList());
+				Predicate[] predicates = new Predicate[list.size()];
+				int count = 0;
+				for (String attribute : list) {
+					predicates[count] = criteria.equal(root.get(attributeName), attribute);
+					count++;
 				}
-				return criteria.or(predicates.toArray(arr));
+				return criteria.or(predicates);
 			}
 		};
 	}

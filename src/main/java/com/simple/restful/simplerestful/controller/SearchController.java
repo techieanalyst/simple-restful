@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -20,11 +22,14 @@ import com.simple.restful.simplerestful.service.DataService;
 @RequestMapping(path = "/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class SearchController {
 
+	private static Logger logger = LoggerFactory.getLogger(SearchController.class);
+	
 	@Autowired
 	private DataService dataService;
 
 	@GetMapping(path = "/dates")
 	public List<LocalDate> getAllUniqueDates() {
+		logger.info(String.format("Getting list of unique dates"));
 		return dataService.retrieveUniqueDates();
 	}
 
@@ -32,6 +37,8 @@ public class SearchController {
 	public List<String> getAllUniqueUsersLoginRecordForGivenTimePeriod(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate) {
+		logger.info(String.format("Getting list of unique users given the criteria: start=%tF, end=%tF",
+				startDate, endDate));
 		return dataService.retrieveUniqueUsersLoggedInOnGivenDate(startDate, endDate);
 	}
 
@@ -48,6 +55,8 @@ public class SearchController {
 		maps.put("attributeTwo", attribute2);
 		maps.put("attributeThree", attribute3);
 		maps.put("attributeFour", attribute4);
+		logger.info(String.format("Getting login count of unique users given the criteria: %s, start=%tF, end=%tF",
+				maps.toString(), startDate, endDate));
 		return dataService.retrieveLoginFrequencyOnGivenCriteria(startDate, endDate, maps);
 	}
 
