@@ -1,9 +1,8 @@
+
 package com.simple.restful.simplerestful.service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,13 +27,12 @@ public class DataService {
 	@Autowired
 	private DataRepository dataRepository;
 	
-	public List<String> sample() {
+	public List<LocalDate> retrieveUniqueDates() {
 		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
 		List<DataEntity> entities = dataRepository.findAll(specifications);
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		
-		List<Date> users = entities.stream().filter(distinctByKey(p -> dateFormat.format(p.getLoginTime()))).map(DataEntity::getUser)
-				.collect(Collectors.toCollection(ArrayList::new));
+		return entities.stream().map(DataEntity::getLoginTime)
+				.map(date -> date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).distinct().sorted()
+				.collect(Collectors.toList());
 	}
 	
 	public Map<String, Integer> retrieveLoginFrequencyOnGivenCriteria(Date startDate, Date endDate,
@@ -45,7 +43,7 @@ public class DataService {
 			if (attributes != null && !attributes.isEmpty())
 				specifications = specifications.and(DataEntitySpecifications.withAttribute(attributeName, attributes));
 		}
-		buildDateRangeSpecification(specifications, startDate, endDate);
+		specifications = buildDateRangeSpecification(specifications, startDate, endDate);
 		List<DataEntity> entities = dataRepository.findAll(specifications);
 		Map<String, Integer> collect = entities.stream()
 				.collect(Collectors.groupingBy(DataEntity::getUser, Collectors.summingInt(e -> 1)));
@@ -55,20 +53,22 @@ public class DataService {
 	
 	public List<String> retrieveUniqueUsersLoggedInOnGivenDate(Date startDate, Date endDate) {
 		Specification<DataEntity> specifications = DataEntitySpecifications.initialize();
-		buildDateRangeSpecification(specifications, startDate, endDate);
+		specifications = buildDateRangeSpecification(specifications, startDate, endDate);
 		List<DataEntity> entities = dataRepository.findAll(specifications);
 		List<String> users = entities.stream().filter(distinctByKey(DataEntity::getUser)).map(DataEntity::getUser)
 				.collect(Collectors.toCollection(ArrayList::new));
 		return users;
 	}
 
-	private void buildDateRangeSpecification(Specification<DataEntity> specification, Date startDate, Date endDate) {
+	private Specification<DataEntity> buildDateRangeSpecification(Specification<DataEntity> specification, Date startDate, Date endDate) {
+		Specification<DataEntity> specifications = specification;
 		if (startDate != null) {
-			specification = specification.and(DataEntitySpecifications.withStartDate(startDate));
+			specifications = specifications.and(DataEntitySpecifications.withStartDate(startDate));
 		}
 		if (endDate != null) {
-			specification = specification.and(DataEntitySpecifications.withEndDate(endDate));
-		}		
+			specifications = specifications.and(DataEntitySpecifications.withEndDate(endDate));
+		}
+		return specifications;
 	}
 
 	private <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {

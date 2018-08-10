@@ -1,5 +1,6 @@
 package com.simple.restful.simplerestful.controller;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.simple.restful.simplerestful.persistence.model.DataEntity;
 import com.simple.restful.simplerestful.service.DataService;
 
 @RestController
@@ -24,18 +24,19 @@ public class SearchController {
 	private DataService dataService;
 
 	@GetMapping(path = "/dates")
-	public void getAllUniqueDates() {
+	public List<LocalDate> getAllUniqueDates() {
+		return dataService.retrieveUniqueDates();
 	}
 
 	@GetMapping(path = "/users")
-	public void getAllUniqueUsersLoginRecordForGivenTimePeriod(
+	public List<String> getAllUniqueUsersLoginRecordForGivenTimePeriod(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate) {
-
+		return dataService.retrieveUniqueUsersLoggedInOnGivenDate(startDate, endDate);
 	}
 
 	@GetMapping(path = "/logins")
-	public List<DataEntity> retrieveUserLoginCountForGivenTimePeriodAndAttributes(
+	public Map<String, Integer> retrieveUserLoginCountForGivenTimePeriodAndAttributes(
 			@RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date startDate,
 			@RequestParam(value = "end", required = false) @DateTimeFormat(pattern = "yyyyMMdd") Date endDate,
 			@RequestParam(value = "attribute1", required = false) List<String> attribute1,
@@ -47,10 +48,7 @@ public class SearchController {
 		maps.put("attributeTwo", attribute2);
 		maps.put("attributeThree", attribute3);
 		maps.put("attributeFour", attribute4);
-		
-		Map<String, Integer> results = dataService.retrieveLoginFrequencyOnGivenCriteria(startDate, endDate, maps);
-		
-		return null;
+		return dataService.retrieveLoginFrequencyOnGivenCriteria(startDate, endDate, maps);
 	}
 
 }
