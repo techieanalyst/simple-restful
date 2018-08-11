@@ -48,60 +48,28 @@ public class DataEntity {
 	
 	public DataEntity() {}
 
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
 	public String getUser() {
 		return user;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
 	}
 
 	public Date getLoginTime() {
 		return loginTime;
 	}
 
-	public void setLoginTime(Date loginTime) {
-		this.loginTime = loginTime;
-	}
-
 	public String getAttributeOne() {
 		return attributeOne;
-	}
-
-	public void setAttributeOne(String attributeOne) {
-		this.attributeOne = attributeOne;
 	}
 
 	public String getAttributeTwo() {
 		return attributeTwo;
 	}
 
-	public void setAttributeTwo(String attributeTwo) {
-		this.attributeTwo = attributeTwo;
-	}
-
 	public String getAttributeThree() {
 		return attributeThree;
 	}
 
-	public void setAttributeThree(String attributeThree) {
-		this.attributeThree = attributeThree;
-	}
-
 	public String getAttributeFour() {
 		return attributeFour;
-	}
-
-	public void setAttributeFour(String attributeFour) {
-		this.attributeFour = attributeFour;
 	}
 
 }

@@ -10,10 +10,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,30 +48,67 @@ public class DataServiceTest {
 	
     @Captor
     private ArgumentCaptor<Specification<DataEntity>> captor;
+    
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	@Test
 	public void retrieveUniqueDates() throws Exception {
 		when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
 		List<LocalDate> dates = dataService.retrieveUniqueDates();
+		verify(dataRepository, times(1)).findAll(captor.capture());
 		assertTrue(Ordering.natural().isOrdered(dates));
-		assertEquals(4, dates.size());
-		assertEquals(LocalDate.of(2014,8,21), dates.get(2));
+		assertEquals(8, dates.size());
+		assertEquals(LocalDate.of(2013,6,20), dates.get(2));
 	}
 
 	@Test
 	public void retrieveUniqueUsersLoggedInOnGivenDate() throws ParseException {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Specification<DataEntity> specification = withStartDate(dateFormat.parse("2015-01-01")).and(withEndDate(dateFormat.parse("2016-01-01")));
 		when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
-		List<String> users = dataService.retrieveUniqueUsersLoggedInOnGivenDate(dateFormat.parse("2010-08-27"), dateFormat.parse("2015-06-04"));
+		List<String> users = dataService.retrieveUniqueUsersLoggedInOnGivenDate(dateFormat.parse("2010-08-27"), dateFormat.parse("2018-12-31"));
 		verify(dataRepository, times(1)).findAll(captor.capture());
 		assertTrue(Ordering.natural().isOrdered(users));
-		assertEquals(4, users.size());
-		assertEquals("kdomini8", users.get(1));
+		assertEquals(7, users.size());
+		assertEquals("kdomini8", users.get(4));
 	}
 	
-
+	@Test
+	public void retrieveLoginFrequencyOnGivenAllCriteria() throws Exception {
+		when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist().subList(8, 9));
+		Map<String, List<String>> map = new HashMap<>();
+		map.put("attributeOne", Arrays.asList("Granada"));
+		map.put("attributeTwo", Arrays.asList("Peru"));
+		map.put("attributeThree", Arrays.asList("Lazzy"));
+		map.put("attributeFour", Arrays.asList("jcb"));
+		Map<String, Integer> loginFrequency = dataService.retrieveLoginFrequencyOnGivenCriteria(dateFormat.parse("2010-08-27"), dateFormat.parse("2018-12-31"), map);
+		verify(dataRepository, times(1)).findAll(captor.capture());
+		verifyNoMoreInteractions(dataRepository);
+		assertEquals(1, loginFrequency.size());
+		assertTrue(loginFrequency.keySet().contains("dbrislandoo"));
+		
+		when(dataRepository.findAll(any(Specification.class)))
+			.thenReturn(createDataEntitylist().stream()
+					.filter(a -> a.getAttributeFour().equalsIgnoreCase("jcb")).collect(Collectors.toList()));
+		map = new HashMap<>();
+		map.put("attributeFour", Arrays.asList("jcb"));
+		loginFrequency = dataService.retrieveLoginFrequencyOnGivenCriteria(dateFormat.parse("2010-08-27"), dateFormat.parse("2018-12-31"), map);
+		verify(dataRepository, times(2)).findAll(captor.capture());
+		verifyNoMoreInteractions(dataRepository);
+		assertEquals(4, loginFrequency.size());
+		assertEquals(new Integer(2), loginFrequency.get("kdomini8"));
+	}
 	
+	@Test
+	public void retrieveEmptyLoginFrequency() throws Exception {
+		when(dataRepository.findAll(any(Specification.class))).thenReturn(new ArrayList<>());
+		Map<String, List<String>> map = new HashMap<>();
+		map.put("attributeOne", Arrays.asList("Manila"));
+		map.put("attributeTwo", Arrays.asList("Philippines"));
+		map.put("attributeThree", Arrays.asList("Vimbo"));
+		map.put("attributeFour", Arrays.asList("diners-club-carte-blanche"));
+		Map<String, Integer> loginFrequency = dataService.retrieveLoginFrequencyOnGivenCriteria(dateFormat.parse("2010-08-27"), dateFormat.parse("2018-12-31"), map);
+		verify(dataRepository, times(1)).findAll(captor.capture());
+		assertEquals(0, loginFrequency.size());
+	}
 	
 	private List<DataEntity> createDataEntitylist() throws ParseException {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -77,32 +118,11 @@ public class DataServiceTest {
 		entities.add(new DataEntity(3, "ohammersleym", formatter.parse("2015-06-03 23:10:52"), "Huangwei", "China", "Yoveo", "americanexpress"));
 		entities.add(new DataEntity(4, "iauchterlonie1d", formatter.parse("2010-08-29 09:37:29"), null, "Peru", "Mynte", "jcb"));
 		entities.add(new DataEntity(5, "kdomini8", formatter.parse("2013-04-27 22:21:24"), "Madīnat ‘Īsá", "Bahrain", null, "jcb"));
+		entities.add(new DataEntity(6, "ecanario5b", formatter.parse("2017-06-04 14:23:08"), "Cataguases", "Brazil", "Skilith", "diners-club-us-ca"));
+		entities.add(new DataEntity(7, "iauchterlonie1d", formatter.parse("2018-05-08 00:56:43"), "Jiaowei", "China", "Devshare", "maestro"));
+		entities.add(new DataEntity(8, "abindonfl", formatter.parse("2013-12-01 19:48:30"), "Canillo", "Andorra", "Yacero", "jcb"));
+		entities.add(new DataEntity(9, "dbrislandoo", formatter.parse("2013-06-20 14:10:21"), "Granada", "Peru", "Lazzy", "jcb"));
 		return entities;
 	}
-	
-	private List<String> createUniqueUsersList() {
-		List<String> users = new ArrayList<>();
-		users.add("bjeal5c");
-		users.add("coconnell5h");
-		users.add("gphilipp50");
-		users.add("zrickardsson5k");
-		return users;		
-	}
-	
-	private Specification<DataEntity> withStartDate(Date startDate) {
-		return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("loginTime"), startDate);
-	}
-
-	private Specification<DataEntity> withEndDate(Date endDate) {
-		Calendar calStart = new GregorianCalendar();
-		calStart.setTime(endDate);
-		calStart.set(Calendar.HOUR_OF_DAY, 23);
-		calStart.set(Calendar.MINUTE, 59);
-		calStart.set(Calendar.SECOND, 59);
-		calStart.set(Calendar.MILLISECOND, 999);
-		Date endOfDay = calStart.getTime();
-		return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("loginTime"), endOfDay);
-	}
-	
 
 }
