@@ -1,5 +1,7 @@
 package com.simple.restful.simplerestful.service;
 
+import static org.mockito.Mockito.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,9 +17,10 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,21 +42,25 @@ public class DataServiceTest {
 	@InjectMocks
 	private DataService dataService;
 	
+    @Captor
+    private ArgumentCaptor<Specification<DataEntity>> captor;
+
 	@Test
 	public void retrieveUniqueDates() throws Exception {
-		Mockito.when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
+		when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
 		List<LocalDate> dates = dataService.retrieveUniqueDates();
 		assertTrue(Ordering.natural().isOrdered(dates));
-		assertEquals(3, dates.size());
-		assertEquals(LocalDate.of(2015,06,03), dates.get(2));
+		assertEquals(4, dates.size());
+		assertEquals(LocalDate.of(2014,8,21), dates.get(2));
 	}
-	
+
 	@Test
 	public void retrieveUniqueUsersLoggedInOnGivenDate() throws ParseException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//		Specification<DataEntity> specification = withStartDate(dateFormat.parse("2015-01-01")).and(withEndDate(dateFormat.parse("2016-01-01")));
-		Mockito.when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
+		Specification<DataEntity> specification = withStartDate(dateFormat.parse("2015-01-01")).and(withEndDate(dateFormat.parse("2016-01-01")));
+		when(dataRepository.findAll(any(Specification.class))).thenReturn(createDataEntitylist());
 		List<String> users = dataService.retrieveUniqueUsersLoggedInOnGivenDate(dateFormat.parse("2010-08-27"), dateFormat.parse("2015-06-04"));
+		verify(dataRepository, times(1)).findAll(captor.capture());
 		assertTrue(Ordering.natural().isOrdered(users));
 		assertEquals(4, users.size());
 		assertEquals("kdomini8", users.get(1));
