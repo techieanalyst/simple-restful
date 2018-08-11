@@ -1,6 +1,6 @@
 server:
   servlet:
-    context-path: /
+    context-path: /test
 
 datasource:
   main:
